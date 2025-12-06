@@ -46,15 +46,42 @@ if (Test-Path $existingScriptsFolder) {
     Write-ProfileLog -Message "Helper-scripts folder removed"
 }
 
-# Copy powershell pofile to destination
-Write-ProfileLog -Message "Copying new powershell profile"
+# Handle local profile preservation
+$localProfilePath = Join-Path -Path $basePath -ChildPath "Microsoft.PowerShell_profile.local.ps1"
+$localProfileExists = Test-Path $localProfilePath
 
-#copy helper-scripts folder
+if ($localProfileExists) {
+    Write-ProfileLog -Message "Preserving existing local profile: $localProfilePath"
+} else {
+    Write-ProfileLog -Message "No local profile found, will create template"
+}
+
+# Copy powershell profile components
+Write-ProfileLog -Message "Copying new powershell profile components"
+
+# Copy helper-scripts folder
 $sourceScriptsFolder = Join-Path -Path $PSScriptRoot -ChildPath "helper-scripts"
-$destinationScriptsFolder = Join-Path -Path (Split-Path -Path $PROFILE -Parent) -ChildPath "helper-scripts"
+$destinationScriptsFolder = Join-Path -Path $basePath -ChildPath "helper-scripts"
 Copy-Item -Path $sourceScriptsFolder -Destination $destinationScriptsFolder -Recurse -Force
 Write-ProfileLog -Message "Copied helper-scripts folder"
 
-$newProfileFilePath = Join-Path -Path $PSScriptRoot -ChildPath Microsoft.PowerShell_profile.ps1
+# Copy main profile (entry point)
+$newProfileFilePath = Join-Path -Path $PSScriptRoot -ChildPath "Microsoft.PowerShell_profile.ps1"
 Copy-Item -Path $newProfileFilePath -Destination $PROFILE
-Write-ProfileLog -Message "Copied new powershell profile"
+Write-ProfileLog -Message "Copied main profile"
+
+# Copy base profile
+$baseProfileSource = Join-Path -Path $PSScriptRoot -ChildPath "Microsoft.PowerShell_profile.base.ps1"
+$baseProfileDestination = Join-Path -Path $basePath -ChildPath "Microsoft.PowerShell_profile.base.ps1"
+Copy-Item -Path $baseProfileSource -Destination $baseProfileDestination
+Write-ProfileLog -Message "Copied base profile"
+
+# Create local profile from template if it doesn't exist
+if (-not $localProfileExists) {
+    $localTemplateSource = Join-Path -Path $PSScriptRoot -ChildPath "Microsoft.PowerShell_profile.local.template.ps1"
+    Copy-Item -Path $localTemplateSource -Destination $localProfilePath
+    Write-ProfileLog -Message "Created local profile template: $localProfilePath" -Level "Success"
+    Write-Host "`nTo add personal customizations, edit: $localProfilePath" -ForegroundColor Cyan
+} else {
+    Write-ProfileLog -Message "Local profile preserved (no changes made)" -Level "Success"
+}

@@ -39,6 +39,3 @@ elseif ($Run -eq "ReplaceProfile") {
 elseif ($Run -eq "Setup") {
     & "$PSScriptRoot\install.ps1"
 }
-
-Write-Host "`nPress any key to continue...";
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown");

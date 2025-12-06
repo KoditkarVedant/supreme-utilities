@@ -1,51 +1,28 @@
 #Requires -Version 5.1
+# PowerShell Profile - Main Entry Point
+# This profile imports both base configuration and local customizations
 
-# Profile initialization with error handling
 try {
-    # Get the profile directory
     $ProfileDir = Split-Path -Parent $PROFILE
-    $HelperScriptsPath = Join-Path $ProfileDir "helper-scripts"
     
-    # Verify helper-scripts directory exists
-    if (-not (Test-Path $HelperScriptsPath)) {
-        Write-Warning "Helper scripts directory not found: $HelperScriptsPath"
-        return
+    # Import base configuration (managed by setup script)
+    $BaseProfile = Join-Path $ProfileDir "Microsoft.PowerShell_profile.base.ps1"
+    if (Test-Path $BaseProfile) {
+        . $BaseProfile
+        Write-Verbose "Base profile loaded: $BaseProfile"
+    } else {
+        Write-Warning "Base profile not found: $BaseProfile"
     }
     
-    # Import helper functions with error handling
-    $HelperScripts = @(
-        'loadOhMyPosh.ps1',
-        'loadTerminalIcons.ps1', 
-        'configureHistory.ps1'
-    )
-    
-    foreach ($script in $HelperScripts) {
-        $scriptPath = Join-Path $HelperScriptsPath $script
-        if (Test-Path $scriptPath) {
-            . $scriptPath
-        } else {
-            Write-Warning "Helper script not found: $scriptPath"
-        }
-    }
-    
-    # Initialize profile components with error handling
-    if (Get-Command 'loadOhMyPosh' -ErrorAction SilentlyContinue) {
-        loadOhMyPosh -Theme "tonybaloney"
-    }
-    
-    if (Get-Command 'loadTerminalIcons' -ErrorAction SilentlyContinue) {
-        loadTerminalIcons
-    }
-    
-    if (Get-Command 'configureHistory' -ErrorAction SilentlyContinue) {
-        configureHistory
-    }
-    
-    # Initialize fnm if available
-    if (Get-Command 'fnm' -ErrorAction SilentlyContinue) {
-        fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
+    # Import local customizations (preserved during setup)
+    $LocalProfile = Join-Path $ProfileDir "Microsoft.PowerShell_profile.local.ps1"
+    if (Test-Path $LocalProfile) {
+        . $LocalProfile
+        Write-Verbose "Local profile loaded: $LocalProfile"
+    } else {
+        Write-Host "No local profile found. Create '$LocalProfile' for personal customizations." -ForegroundColor Yellow
     }
     
 } catch {
-    Write-Error "Error initializing PowerShell profile: $($_.Exception.Message)"
+    Write-Error "Error loading PowerShell profile: $($_.Exception.Message)"
 }
