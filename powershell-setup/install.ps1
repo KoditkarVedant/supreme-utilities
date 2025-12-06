@@ -1,23 +1,14 @@
-# Install OhMyPosh
-if (!(CheckCommand -Name oh-my-posh)) {
-    Log -Message "Installing Oh my posh"
-    winget install JanDeDobbeleer.OhMyPosh
-    Log -Message "Installed Oh my posh"
-}
-else {
-    Log -Message "Skip: OhMyPosh already existss."
-}
+. .\helper.ps1
 
-if (ModuleExists("Terminal-Icons")) {
-    Log -Message "Skip: Terminal-Icons powershell module exists."
-} 
-else {
-    Log -Message "Installing Terminal-Icons powershell module"
-    Install-Module -Name Terminal-Icons -Repository PSGallery
-    Log -Message "Installed Terminal-Icons powershell module"
-}
+Install-Winget-Package `
+    -PackageName "Oh My Posh" `
+    -InstallerCommand "JanDeDobbeleer.OhMyPosh" `
+    -CheckCommand "oh-my-posh"
 
+Install-PS-Module -ModuleName "Terminal-Icons"
+Install-PS-Module -ModuleName "PSReadLine"
 
-Log -Message "Installing PSReadLine powershell module"
-Install-Module PSReadLine -Force
-Log -Message "Installed PSReadLine powershell module"
+Install-Winget-Package `
+    -PackageName "fnm (Fast Node Manager)" `
+    -InstallerCommand "Schniz.fnm" `
+    -CheckCommand "fnm"
